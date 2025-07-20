@@ -1,0 +1,76 @@
+{
+	"name": "@one/one",
+	"version": "0.0.1",
+	"private": true,
+	"nx": {
+		"targets": {
+			"prisma-push": {
+				"executor": "nx:run-commands",
+				"options": {
+					"command": "npx prisma db push",
+					"cwd": "apps/one"
+				}
+			},
+			"prisma-generate": {
+				"executor": "nx:run-commands",
+				"options": {
+					"command": "npx prisma generate",
+					"cwd": "apps/one"
+				}
+			},
+			"better-generate": {
+				"executor": "nx:run-commands",
+				"options": {
+					"command": "npx @better-auth/cli generate",
+					"cwd": "apps/one"
+				}
+			},
+			"build": {
+				"executor": "nx:run-commands",
+				"options": {
+					"command": "webpack-cli build",
+					"args": [
+						"--node-env=production"
+					]
+				},
+				"configurations": {
+					"development": {
+						"args": [
+							"--node-env=development"
+						]
+					}
+				}
+			},
+			"serve": {
+				"continuous": true,
+				"executor": "@nx/js:node",
+				"defaultConfiguration": "development",
+				"dependsOn": [
+					"build"
+				],
+				"options": {
+					"buildTarget": "@one/one:build",
+					"runBuildTargetDependencies": false,
+					"inspect": false
+				},
+				"configurations": {
+					"development": {
+						"buildTarget": "@one/one:build:development"
+					},
+					"production": {
+						"buildTarget": "@one/one:build:production"
+					}
+				}
+			},
+			"docker-build": {
+				"dependsOn": [
+					"build"
+				],
+				"command": "docker build -f apps/one/Dockerfile . -t one-one"
+			}
+		}
+	},
+	"dependencies": {
+		"@prisma/client": "6.12.0"
+	}
+}
