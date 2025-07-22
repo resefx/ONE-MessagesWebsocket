@@ -64,6 +64,7 @@
 			},
 			"docker-build": {
 				"dependsOn": [
+					"prisma-generate",
 					"build"
 				],
 				"command": "docker build -f apps/one/Dockerfile . -t one-one"

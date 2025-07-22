@@ -1,19 +1,24 @@
 FROM node:lts-alpine
 
-ENV HOST=0.0.0.0
-ENV PORT=3000
+WORKDIR /apps/one
 
-WORKDIR /app
+RUN addgroup --system one && \
+    adduser --system -G one one
 
-RUN addgroup --system one-one && \
-    adduser --system -G one-one one-one
+# Copia o código compilado do dist correto
+COPY ./dist ./dist/
 
-COPY dist ./one-one/
-COPY package.json ./one-one/
-RUN chown -R one-one:one-one ./one-one
+# Copia o package.json gerado pelo webpack e instala as dependências
+COPY ./dist/package.json ./
+RUN npm install --omit=dev
 
-RUN npm --prefix ./one-one --omit=dev -f install
+# Copia os arquivos do Prisma para o local correto
+RUN mkdir -p src/generated/prisma && \
+    cp -r dist/src/generated/prisma/* src/generated/prisma/
 
-USER one-one
+# Muda as permissões
+RUN chown -R one:one ./dist ./src
 
-CMD [ "node", "one-one" ]
+USER one
+
+CMD [ "node", "dist/main.js" ]
